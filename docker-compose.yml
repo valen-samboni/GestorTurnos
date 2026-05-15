@@ -1,0 +1,65 @@
+services:
+
+  gateway-service:
+    build: ./gateway-service
+    ports:
+      - "5000:5000"
+    depends_on:
+      - users-service
+      - turns-service
+      - notifications-service
+    restart: always
+
+  users-service:
+    build: ./users-service
+    ports:
+      - "5001:5000"
+    env_file:
+      - .env
+    environment:
+      DB_NAME: users_db
+    depends_on:
+      - db
+    restart: always
+
+  turns-service:
+    build: ./turns-service
+    ports:
+      - "5002:5000"
+    env_file:
+      - .env
+    environment:
+      DB_NAME: turns_db
+    depends_on:
+      - db
+      - users-service
+      - notifications-service
+    restart: always
+
+  notifications-service:
+    build: ./notifications-service
+    ports:
+      - "5003:5000"
+    env_file:
+      - .env
+    environment:
+      DB_NAME: notifications_db
+    depends_on:
+      - db
+    restart: always
+
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
