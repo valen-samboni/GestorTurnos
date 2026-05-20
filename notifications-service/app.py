@@ -42,6 +42,14 @@ def home():
         "mensaje": "Notifications Service activo"
     })
 
+# HEALTH CHECK
+@app.route("/health")
+def health():
+
+    return jsonify({
+        "status": "Notifications activo"
+    })
+
 # LISTAR NOTIFICACIONES
 @app.route("/notifications", methods=["GET"])
 def get_notifications():

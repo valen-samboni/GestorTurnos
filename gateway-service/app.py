@@ -17,6 +17,14 @@ def home():
         ]
     })
 
+# HEALTH CHECK
+@app.route("/health")
+def health():
+
+    return jsonify({
+        "status": "Gateway activo"
+    })
+
 # USERS - GET
 @app.route("/users", methods=["GET"])
 def get_users():

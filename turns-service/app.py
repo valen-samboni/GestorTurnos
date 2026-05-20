@@ -38,7 +38,6 @@ CREATE TABLE IF NOT EXISTS turns (
 """)
 conn.commit()
 
-
 # GENERAR TURNO DESDE BD
 def generar_turno():
 
@@ -56,6 +55,14 @@ def generar_turno():
     ) + 1
 
     return "T" + str(numero)
+
+# HEALTH CHECK
+@app.route("/health")
+def health():
+
+    return jsonify({
+        "status": "Turns activo"
+    })
 
 # LISTAR TURNOS
 @app.route("/turns", methods=["GET"])
