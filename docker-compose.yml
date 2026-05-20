@@ -48,6 +48,16 @@ services:
       - db
     restart: always
 
+  reports-service:
+    build: ./reports-service
+    ports:
+      - "5004:5000"
+    depends_on:
+      - users-service
+      - turns-service
+      - notifications-service
+    restart: always
+    
   db:
     image: postgres:15
     container_name: postgres_db
