@@ -37,6 +37,13 @@ CREATE TABLE IF NOT EXISTS users (
 """)
 conn.commit()
 
+# HEALTH CHECK
+@app.route("/health")
+def health():
+
+    return jsonify({
+        "status": "Users activo"
+    })
 
 # LISTAR USUARIOS
 @app.route("/users", methods=["GET"])
