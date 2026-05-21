@@ -2,8 +2,15 @@ from flask import Flask, request, jsonify
 import psycopg2 # type: ignore
 import os
 import time
+import logging
 
 app = Flask(__name__)
+
+# LOGS
+logging.basicConfig(  # type: ignore
+    level=logging.INFO,  # type: ignore
+    format="%(asctime)s %(levelname)s NOTIFICATIONS: %(message)s" 
+    )
 
 # CONEXION A BASE DE DATOS
 while True:
@@ -17,11 +24,16 @@ while True:
 
         cur = conn.cursor()
 
-        print("Conectado a notifications_db")
+        logging.info( # type: ignore
+            "Conectado a notifications_db"
+        )
         break
 
     except:
-        print("Esperando base de datos...")
+        logging.error(  # type: ignore
+            "Esperando base de datos..." 
+        )
+
         time.sleep(3)
 
 # CREAR TABLA
@@ -111,7 +123,7 @@ def create_notification():
 
     conn.commit()
 
-    print("Notificacion enviada a:", identificacion)
+    logging.info( "Notificacion enviada a %s",identificacion) # type: ignore
 
     return jsonify({
         "mensaje": "Notificacion registrada correctamente",

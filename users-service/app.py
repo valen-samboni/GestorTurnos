@@ -36,6 +36,12 @@ CREATE TABLE IF NOT EXISTS users (
 )
 """)
 conn.commit()
+# HOME 
+@app.route("/") 
+def home(): 
+    return jsonify({ 
+        "mensaje": "Users Service activo" 
+    })
 
 # HEALTH CHECK
 @app.route("/health")
