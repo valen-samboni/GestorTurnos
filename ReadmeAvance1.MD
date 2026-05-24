@@ -1,177 +1,469 @@
-# Sistema de Gestión de Turnos basado en Microservicios
+# Sistema Distribuido de Gestión de Turnos basado en Microservicios
 
-## Descripción del proyecto
+# Descripción general del proyecto
 
-El presente proyecto implementa un sistema de gestión de turnos utilizando una arquitectura de microservicios, en la cual cada componente del sistema funciona de manera independiente y se comunica con los demás a través de protocolos de red.
+El presente proyecto consiste en el desarrollo de un sistema distribuido para la gestión de turnos utilizando una arquitectura basada en microservicios.
 
-El sistema permite el registro de usuarios, la asignación de turnos y generar notificaciones. Cada una de estas funcionalidades está desacoplada en servicios independientes, lo que facilita la escalabilidad, mantenibilidad y despliegue del sistema.
+El objetivo principal del sistema es permitir el registro de usuarios, la asignación automática de turnos y la generación de notificaciones, implementando mecanismos de comunicación distribuida entre múltiples servicios desacoplados.
 
-Se implementa una comunicación síncrona entre microservicios mediante el uso de HTTP, donde cada servicio realiza solicitudes a otros y espera una respuesta para continuar con su ejecución. Adicionalmente, se utiliza una base de datos relacional (PostgreSQL) para cada servicio siguiendo el principio de desacoplamiento y autonomía de datos, junto con volúmenes en Docker para evitar la pérdida de datos y también se implementó un API Gateway como punto único de entrada para centralizar las solicitudes del cliente.
+La solución fue desarrollada aplicando los conceptos trabajados durante el curso de Sistemas Distribuidos, incluyendo:
 
-El sistema está contenerizado mediante Docker y orquestado con Docker Compose, lo que permite su ejecución en diferentes entornos de manera consistente.
+* Arquitectura de microservicios
+* Comunicación HTTP entre servicios
+* API Gateway
+* Persistencia desacoplada
+* Contenerización con Docker
+* Tolerancia a fallos
+* Circuit Breaker
+* Monitoreo básico
+* Logs distribuidos
+* Recuperación de servicios
 
-## Instrucciones para la ejecución
+El sistema busca simular un entorno distribuido real, donde cada componente tiene responsabilidades independientes y puede escalar o fallar de forma aislada sin afectar completamente el funcionamiento global de la aplicación.
 
-1. Clonar el repositorio:
+---
 
-    git clone: https://github.com/juanhr1/Sistema-de-turnos.git
-    cd gestor-turnos-py
+# Problemática abordada
 
-2. Crear el archivo de configuración `.env` en la raíz del proyecto:
-    env
-        DB_HOST=db
-        DB_NAME=turnos_db
-        DB_USER=admin
-        DB_PASSWORD=admin
+En muchos sistemas tradicionales de gestión de turnos, toda la lógica de negocio se encuentra centralizada en una única aplicación monolítica, lo que genera dificultades relacionadas con:
 
-3. Construir y ejecutar los contenedores:
+* mantenimiento del sistema
+* escalabilidad
+* tolerancia a fallos
+* despliegues independientes
+* monitoreo
+* actualización de funcionalidades
 
-    docker-compose up --build
+Para solucionar esta problemática, el proyecto implementa una arquitectura distribuida basada en microservicios, permitiendo desacoplar las funcionalidades del sistema en servicios independientes que se comunican mediante HTTP.
 
+De esta manera, si uno de los servicios presenta fallos, los demás componentes continúan funcionando parcialmente gracias a los mecanismos de resiliencia implementados.
 
-4. Verificar el funcionamiento de los servicios en:
+---
 
-* http://localhost:5000
-* http://localhost:5001/users
-* http://localhost:5002/turns
-* http://localhost:5003/notifications
+# Objetivos del sistema
 
-## Arquitectura del sistema
+## Objetivo general
 
-El proyecto está compuesto por los siguientes servicios:
-### 1. API Gateway
-Encargado de recibir solicitudes externas y redirigirlas al servicio correcto.
-Puerto: 5000
+Desarrollar un sistema distribuido de gestión de turnos utilizando arquitectura de microservicios, aplicando mecanismos de comunicación, monitoreo y tolerancia a fallos.
 
-### 2. Users Service
-Gestiona la información de usuarios.
-Funciones:
-- Registrar usuarios.
-- Consultar usuarios registrados.
+## Objetivos específicos
 
-Puerto: 5001
+* Implementar microservicios desacoplados
+* Gestionar usuarios y turnos
+* Integrar servicios mediante HTTP
+* Persistir información utilizando PostgreSQL
+* Contenerizar el sistema mediante Docker
+* Aplicar el patrón Circuit Breaker
+* Implementar monitoreo básico y logs
+* Validar recuperación de servicios
 
-Crear usuario
-* **POST /users**
-  Permite registrar un nuevo usuario en el sistema.
+---
 
-json
-    {
-    "identificacion": "123",
-    "telefono": "3001234567"
-    }
+# Arquitectura del sistema
 
-Ver usuarios
-* **GET /users**
-  Retorna la lista de usuarios registrados.
+El sistema se encuentra compuesto por múltiples microservicios independientes que se comunican mediante solicitudes HTTP.
 
-### 3. Turns Service
-Gestiona la lógica de turnos
-Funciones:
-- Validar usuario existente.
-- Generar turnos consecutivos.
-- Guardar turnos.
-- Enviar notificaciones.
+Cada servicio implementa una responsabilidad específica dentro del sistema distribuido.
 
-Puerto: 5002
+## Componentes implementados
 
-crear turno
-* **POST /turn**
-  Permite crear un turno para un usuario existente. Este endpoint realiza una comunicación síncrona con el servicio de usuarios para validar la existencia del usuario antes de registrar el turno.
+* gateway-service
+* users-service
+* turns-service
+* notifications-service
+* reports-service
+* PostgreSQL
 
-json
-    {
-    "identificacion": "123"
-    }
+---
 
-Consultar turnos
-* **GET /turns**
-  Permite consultar los turnos almacenados en la base de datos.
+# Explicación de servicios
 
+## Gateway Service
 
-### 4. Notifications Service
-Gestiona el historial de notificaciones.
-Funciones:
-- Recibir eventos de nuevos turnos.
-- Guardar mensajes.
-- Consultar historial.
+El Gateway Service actúa como punto de entrada principal del sistema distribuido.
 
-Puerto: 5003
+Su responsabilidad consiste en recibir las solicitudes del cliente y redireccionarlas hacia los diferentes microservicios internos.
 
-crear natificación manual
-* **POST /notify**
-  Recibe solicitudes desde el servicio de turnos para simular el envío de notificaciones. Este servicio representa un comportamiento desacoplado dentro del sistema.
+Esto permite centralizar el acceso al sistema y desacoplar al cliente de la arquitectura interna.
 
-consultar natificación 
-* **GET /notifications**
+### Funciones principales
 
-### 5. PostgreSQL
-## Bases de datos por servicio
+* Redireccionamiento de solicitudes
+* Comunicación entre cliente y servicios
+* Validación básica de disponibilidad
+* Control centralizado de acceso
 
-- users-service → users_db
-- turns-service → turns_db
-- notifications-service → notifications_db
+### Endpoints
 
-Cada base contiene únicamente la información correspondiente a su dominio funcional.
+```bash id="1jfd9w"
+GET  /
+GET  /health
+GET  /users
+POST /users
+GET  /turns
+POST /turn
+GET  /notifications
+POST /notify
+```
 
-## Base de datos
-Se utiliza PostgreSQL con persistencia mediante volumen Docker.
-- Conservación de datos.
-- Estructura relacional.
-- Integridad de información.
-- Soporte SQL.
+---
 
-## Variables de entorno
-Se utilizan variables de entorno para separar configuración del código.
-- Host de base de datos
-- Usuario
-- Contraseña
-- Nombre de base de datos
+## Users Service
 
-Esto mejora seguridad y portabilidad.
+El Users Service administra el registro y almacenamiento de usuarios dentro del sistema.
 
-## Logs y Monitoreo
-Cada servicio registra eventos en consola:
-- Solicitudes recibidas.
-- Usuarios creados.
-- Turnos asignados.
-- Notificaciones registradas.
-- Errores internos.
+Implementa validaciones básicas y persistencia independiente en PostgreSQL.
 
-Ver logs en tiempo real:
-  docker-compose logs -f
-Esto facilita el seguimiento de solicitudes, errores y pruebas de disponibilidad.
+### Funciones principales
 
-## Tolerancia básica a fallos
+* Registro de usuarios
+* Consulta de usuarios
+* Validación de datos
+* Persistencia de información
 
-Se implementaron timeouts en las comunicaciones entre servicios para evitar bloqueos cuando un microservicio no responde o se encuentra caído.
+### Endpoints
 
-## Tecnologías Utilizadas
-- Python
-- Flask
-- PostgreSQL
-- Docker
-- Docker Compose
-- Requests
-- Psycopg2
-- Postman
+```bash id="09jfsd"
+GET  /users
+POST /users
+GET  /health
+```
 
-## Conceptos aplicados
-- Microservicios
-- Comunicación distribuida
-- API Gateway
-- Persistencia
-- Contenedores
-- Escalabilidad
-- Portabilidad
-- Logs
+---
 
-## Comando útiles
-- Detener el sistema: docker-compose down
-- Reconstruir sistema: docker-compose up --build
-- Ver contenedores activos: docker ps
-- Ver logs: docker-compose logs -f
+## Turns Service
 
-## Conclusión
+El Turns Service es responsable de generar automáticamente los turnos de atención.
 
-El sistema desarrollado evidencia la aplicación de conceptos fundamentales de sistemas distribuidos, tales como la separación de responsabilidades, comunicación entre servicios, persistencia de datos y despliegue en contenedores. Esta arquitectura permite la escalabilidad del sistema y facilita su mantenimiento y evolución.
+Este servicio implementa integración distribuida con Users Service y Notifications Service.
+
+### Funciones principales
+
+* Generación automática de turnos
+* Validación de usuarios existentes
+* Comunicación entre servicios
+* Registro de turnos
+
+### Endpoints
+
+```bash id="1jvda3"
+GET  /turns
+POST /turn
+GET  /health
+```
+
+---
+
+## Notifications Service
+
+El Notifications Service administra las notificaciones asociadas a los turnos generados.
+
+Este servicio almacena el historial de notificaciones enviadas.
+
+### Funciones principales
+
+* Registro de notificaciones
+* Consulta de notificaciones
+* Persistencia independiente
+* Comunicación distribuida
+
+### Endpoints
+
+```bash id="p9s0d1"
+GET  /notifications
+POST /notify
+GET  /health
+```
+
+---
+
+## Reports Service
+
+El Reports Service consolida información proveniente de múltiples microservicios.
+
+Adicionalmente, implementa mecanismos de tolerancia a fallos mediante el patrón Circuit Breaker.
+
+### Funciones principales
+
+* Consolidación de información
+* Integración distribuida
+* Monitoreo básico
+* Tolerancia a fallos
+* Recuperación automática
+
+### Endpoints
+
+```bash id="1jdas9"
+GET /reports
+GET /health
+```
+
+---
+
+# Comunicación distribuida
+
+La comunicación entre servicios se realiza mediante solicitudes HTTP utilizando la librería Requests.
+
+## Flujo principal
+
+* Cliente → Gateway
+* Gateway → Users Service
+* Gateway → Turns Service
+* Turns Service → Users Service
+* Turns Service → Notifications Service
+* Reports Service → Todos los servicios
+
+Esto permite desacoplar responsabilidades y distribuir la carga funcional entre múltiples componentes independientes.
+
+---
+
+# Persistencia de datos
+
+Cada servicio implementa persistencia utilizando PostgreSQL.
+
+El sistema utiliza Docker Volumes para mantener la información almacenada incluso cuando los contenedores son reiniciados.
+
+## Bases de datos utilizadas
+
+* users_db
+* turns_db
+* notifications_db
+
+---
+
+# Contenerización
+
+El sistema se ejecuta completamente mediante Docker Compose.
+
+Cada microservicio cuenta con:
+
+* Dockerfile independiente
+* comunicación interna mediante red Docker
+* reinicio automático
+* despliegue desacoplado
+
+Esto facilita la portabilidad y ejecución del sistema en diferentes entornos.
+
+---
+
+# Tecnologías utilizadas
+
+* Python
+* Flask
+* PostgreSQL
+* Docker
+* Docker Compose
+* Requests
+* Psycopg2
+
+---
+
+# Health Checks y monitoreo
+
+El sistema implementa endpoints `/health` para validar disponibilidad de cada microservicio.
+
+Además, se implementan logs distribuidos para monitorear:
+
+* solicitudes
+* errores
+* disponibilidad
+* recuperación de servicios
+* fallos de comunicación
+
+---
+
+# Tolerancia a fallos
+
+El proyecto implementa el patrón Circuit Breaker dentro del Reports Service.
+
+## Estados implementados
+
+### CLOSED
+
+Estado normal de funcionamiento donde las solicitudes son procesadas correctamente.
+
+### OPEN
+
+Cuando múltiples solicitudes fallan consecutivamente, el circuito se abre para evitar seguir consumiendo recursos sobre servicios caídos.
+
+### HALF-OPEN
+
+Después de un tiempo de recuperación, el sistema prueba nuevamente la disponibilidad del servicio antes de cerrar completamente el circuito.
+
+---
+
+# Recuperación de servicios
+
+La recuperación se valida utilizando:
+
+```bash id="19jda1"
+docker stop
+docker start
+```
+
+De esta manera se simulan fallos reales dentro de la arquitectura distribuida.
+
+---
+
+# Variables de entorno
+
+El proyecto utiliza variables de entorno para desacoplar información sensible de la configuración del sistema.
+
+## Archivo `.env.example`
+
+```env id="91jda8"
+DB_HOST=db
+DB_USER=admin
+DB_PASSWORD=admin
+```
+
+---
+
+# Instrucciones de ejecución
+
+## 1. Clonar repositorio
+
+```bash id="1hfd73"
+git clone URL_DEL_REPOSITORIO
+```
+
+---
+
+## 2. Ingresar al proyecto
+
+```bash id="18hfs8"
+cd gestor-turnos
+```
+
+---
+
+## 3. Levantar contenedores
+
+```bash id="19jfd8"
+docker-compose up --build
+```
+
+---
+
+## 4. Crear bases de datos
+
+```bash id="8jfd11"
+docker exec -it postgres_db psql -U admin -d postgres
+```
+
+Ejecutar:
+
+```sql id="1jd881"
+CREATE DATABASE users_db;
+CREATE DATABASE turns_db;
+CREATE DATABASE notifications_db;
+```
+
+---
+
+# Evidencias del sistema
+
+## Fase 1 - Arquitectura
+
+### Docker funcionando
+
+![Docker](evidencias/fase1-arquitectura/docker-ps.png)
+
+### Gateway activo
+
+![Gateway](evidencias/fase1-arquitectura/gateway-home.png)
+
+---
+
+## Fase 2 - Funcionamiento
+
+### Health checks de microservicios
+
+![Health Checks](evidencias/fase2-funcionamiento/health.png)
+
+---
+
+## Fase 3 - Integración entre servicios
+
+### Registro de usuario
+
+![Crear Usuario](evidencias/fase3-integracion/crear-usuario.png)
+
+### Generación de turno
+
+![Crear Turno](evidencias/fase3-integracion/crear-turno.png)
+
+### Notificaciones generadas
+
+![Notificaciones](evidencias/fase3-integracion/ver-notificaciones.png)
+
+### Consolidación de información
+
+![Reports](evidencias/fase3-integracion/reports-integracion.png)
+
+---
+
+## Fase 4 - Monitoreo
+
+### Logs distribuidos del sistema
+
+![Logs](evidencias/fase4-monitoreo/logs-sistema.png)
+
+---
+
+## Fase 5 - Circuit Breaker
+
+### Simulación de fallo
+
+![Fallo Servicio](evidencias/fase5-circuit-breaker/fallo-servicio.png)
+
+### Circuito abierto
+
+![Circuit Open](evidencias/fase5-circuit-breaker/circuit-open.png)
+
+### Logs del Circuit Breaker
+
+![Logs Open](evidencias/fase5-circuit-breaker/logs-open.png)
+
+---
+
+## Fase 6 - Recuperación
+
+### Recuperación del servicio
+
+![Recuperacion](evidencias/fase6-recuperacion/recuperacion-servicio.png)
+
+### Circuito restablecido
+
+![Circuit Closed](evidencias/fase6-recuperacion/circuit.png)
+
+---
+
+# Escalabilidad futura
+
+Como trabajo futuro, el sistema podría implementar:
+
+* balanceo de carga
+* Kubernetes
+* autenticación JWT
+* monitoreo avanzado con Prometheus y Grafana
+* mensajería asíncrona
+* API Gateway avanzado
+* escalamiento horizontal
+
+---
+
+# Conclusiones
+
+La implementación del sistema permitió aplicar los principales conceptos de Sistemas Distribuidos mediante una arquitectura desacoplada basada en microservicios.
+
+Se logró validar:
+
+* comunicación distribuida
+* persistencia desacoplada
+* monitoreo básico
+* tolerancia a fallos
+* recuperación de servicios
+* integración entre componentes
+
+El proyecto demuestra cómo una arquitectura distribuida permite construir sistemas más resilientes, escalables y mantenibles frente a arquitecturas monolíticas tradicionales.
