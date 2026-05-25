@@ -358,6 +358,7 @@ Ejecutar:
 CREATE DATABASE users_db;
 CREATE DATABASE turns_db;
 CREATE DATABASE notifications_db;
+CREATE DATABASE reports_db;
 ```
 
 ---
