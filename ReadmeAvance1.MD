@@ -179,9 +179,7 @@ GET  /health
 
 ## Reports Service
 
-El Reports Service consolida información proveniente de múltiples microservicios.
-
-Adicionalmente, implementa mecanismos de tolerancia a fallos mediante el patrón Circuit Breaker.
+El Reports Service consolida información distribuida, implementa Circuit Breaker y almacena historial de reportes
 
 ### Funciones principales
 
@@ -195,6 +193,8 @@ Adicionalmente, implementa mecanismos de tolerancia a fallos mediante el patrón
 
 ```bash id="1jdas9"
 GET /reports
+POST /reports
+GET /reports/history
 GET /health
 ```
 
@@ -228,6 +228,7 @@ El sistema utiliza Docker Volumes para mantener la información almacenada inclu
 * users_db
 * turns_db
 * notifications_db
+* reports_db
 
 ---
 
