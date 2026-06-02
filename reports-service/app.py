@@ -56,12 +56,41 @@ ultimo_fallo = None
 
 TIEMPO_RECUPERACION = 15
 
+reportes_generados = 0
+
 # HOME
 @app.route("/")
 def home():
 
     return jsonify({
         "mensaje": "Reports Service activo"
+    })
+
+#MONITOR
+@app.route("/monitor", methods=["GET"])
+def monitor():
+
+    cur.execute(
+        "SELECT COUNT(*) FROM reports_history"
+    )
+
+    total_reportes = cur.fetchone()[0]
+
+    return jsonify({
+        "timestamp": str(datetime.now()),
+        "servicio": "reports-service",
+        "estado_circuito": estado_circuito,
+        "fallos_actuales": fallos,
+        "max_fallos": MAX_FALLOS,
+        "tiempo_recuperacion": TIEMPO_RECUPERACION,
+        "ultimo_fallo": str(ultimo_fallo)
+            if ultimo_fallo else None,
+        "reportes_generados": total_reportes,
+        "servicios_monitoreados": [
+            "users-service",
+            "turns-service",
+            "notifications-service"
+        ]
     })
 
 # HEALTH CHECK
@@ -80,6 +109,7 @@ def reports():
     global fallos
     global estado_circuito
     global ultimo_fallo
+    global reportes_generados
 
     # CIRCUITO ABIERTO
     if estado_circuito == "OPEN":
@@ -91,6 +121,10 @@ def reports():
             estado_circuito = "HALF-OPEN"
 
             logging.warning(
+                "Intentando recuperar servicio"
+            )
+
+            logging.warning(
                 "Circuito HALF-OPEN"
             )
 
@@ -98,8 +132,15 @@ def reports():
 
             return jsonify({
                 "error": "Circuito abierto",
-                "estado_circuito": estado_circuito
-            }), 503
+                "estado_circuito": estado_circuito,
+                "fallos_actuales": fallos,
+                "max_fallos": MAX_FALLOS,
+                "tiempo_restante":
+                    int(
+                        TIEMPO_RECUPERACION -
+                        (tiempo_actual - ultimo_fallo)
+                    )
+            }) ,503
 
     try:
 
@@ -158,6 +199,8 @@ def reports():
         ))
 
         conn.commit()
+
+        reportes_generados += 1
 
         logging.info(
             "Reporte generado correctamente"

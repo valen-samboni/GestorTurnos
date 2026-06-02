@@ -195,6 +195,7 @@ El Reports Service consolida información distribuida, implementa Circuit Breake
 GET /reports
 POST /reports
 GET /reports/history
+GET /monitor
 GET /health
 ```
 
@@ -292,6 +293,20 @@ Cuando múltiples solicitudes fallan consecutivamente, el circuito se abre para 
 Después de un tiempo de recuperación, el sistema prueba nuevamente la disponibilidad del servicio antes de cerrar completamente el circuito.
 
 ---
+# Monitoreo del sistema
+
+El sistema implementa monitoreo básico mediante logs distribuidos, health checks y un endpoint dedicado de monitoreo.
+
+El endpoint: GET /monitor
+
+permite consultar información operativa en tiempo real como:
+
+- Estado del Circuit Breaker.
+- Cantidad de fallos registrados.
+- Número máximo de fallos configurados.
+- Tiempo de recuperación.
+- Reportes generados.
+- Servicios monitoreados.
 
 # Recuperación de servicios
 
@@ -410,6 +425,9 @@ CREATE DATABASE reports_db;
 ### Logs distribuidos del sistema
 
 ![Logs](evidencias/fase4-monitoreo/logs-sistema.png)
+
+### Monitoreo
+![Logs](evidencias/fase4-monitoreo/monitor.png)
 
 ---
 
